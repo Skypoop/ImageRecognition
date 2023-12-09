@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clothing Recognition</title>
+</head>
+<body style="background-color: rgb(31, 31, 31);">
+
+    <h1 style="text-align: center; color: aliceblue;">Clothing Recognition UwU</h1>
+    
+    <canvas id="drawingCanvas" width="560" height="560"  
+        style="background-color: black; margin: auto; display: block;">
+    </canvas>
+    <button id="predictButton" 
+        style="font-size: large;  font: 1em sans-serif; margin: auto; display: block;">Predict
+    </button>
+    <p id="predictionResult" 
+        style="color: aliceblue; text-align: center; font-size: large;  font: 1em sans-serif; margin-bottom: auto;">Prediction: 
+    </p>
+
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const context = canvas.getContext('2d');
+        const predictButton = document.getElementById('predictButton');
+        const predictionResult = document.getElementById('predictionResult');
+
+        let drawing = false;
+
+        canvas.addEventListener('mousedown', () => {
+            drawing = true;
+            context.beginPath();
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            drawing = false;
+            context.closePath();
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!drawing) return;
+
+            context.lineWidth = 10;
+            context.lineCap = 'round';
+            context.strokeStyle = 'white';
+
+            context.lineTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
+            context.stroke();
+        });
+
+        predictButton.addEventListener('click', () => {
+            
+            const canvas = document.getElementById('drawingCanvas');
+            const context = canvas.getContext('2d');
+
+            // Get the canvas data as a base64 string
+            const imageData = canvas.toDataURL('image/png').split(',')[1];
+
+            fetch('/predict', {
+                method: 'POST',
+                body: JSON.stringify({ imageData }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                predictionResult.textContent = `Predicted Clothing: ${data.class_name}`;
+            });
+        });
+    </script>
+</body>
+</html>
